@@ -19,7 +19,8 @@ def print_menu():
     print("Seleccione qué bots iniciar:")
     print("1. Escanear")
     print("2. Bot2")
-    print("3. Iniciar todos")
+    print("3. Bot3")
+    print("4. Iniciar todos")
 
 def main():
     print("INICIE EL ATAQUE DDOS")
@@ -29,7 +30,7 @@ def main():
 
         if choice == 'q':
             break
-        elif choice == '3':
+        elif choice == '4':
             start_event.set()  # Desbloquear la señal de inicio para todos los bots
             bot_functions = [bot1_attack, bot2_attack,bot3_attack,bot4_attack,bot5_attack,
                              bot6_attack,bot7_attack,bot8_attack,bot9_attack,bot10_attack]
@@ -46,6 +47,12 @@ def main():
             bot_name = "Bot2"
             start_event.set()
             threading.Thread(target=bot2_attack, args=(bot_name, start_event)).start()
+            print(f"Iniciando {bot_name}...")
+            break
+        elif choice == '3':
+            bot_name = "Bot3"
+            start_event.set()
+            threading.Thread(target=bot3_attack, args=(bot_name, start_event)).start()
             print(f"Iniciando {bot_name}...")
             break
         else:
