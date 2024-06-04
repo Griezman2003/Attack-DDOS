@@ -1,28 +1,50 @@
 import nmap
-import threading
-def puertoScan (start_event,target_url ):
-    if start_event.is_set():
-        print("Escaneando puerto")
-    try:
-        nm = nmap.PortScanner() ## Aqui simplemente iniciamos a escanear el puerto, (PortScanner es de la libreria nmappara escanear puertos)
-        nm.scan(target_url, arguments='-p-')
-        
-        for host in nm.all_hosts():  ## (all_host) metodo de la libreria nmap para iterar por todos los resultados del scaneo)
-            print("Resultados del escaneo para: {host}")
-            for protocolo in nm[host].all_protocols():
-                print("El protocolo es: {protocolo}")
-                puertos = nm[host][protocolo].keys()
-                for puerto in puertos:
-                    print(f"Puerto: {puerto}, Estado: {nm[host][protocolo][puerto]['estado']}")     
-    except nmap.PortScannerError as e:
-            print(f"Error al escanear con Nmap:", e)
-    else:
-        print(f"Señal de inicio no activada. Esperando instrucciones...")
+import socket
 
-if __name__ == "__main__":
-    start_event = threading.Event()
-    start_event.set()
-    target_url = "https://utecan.edu.mx/"
-    if start_event.is_set():
-        puertoScan(start_event,target_url)
-            
+def puertoScan(host, start_port, end_port):
+    # Eliminar el esquema y cualquier barra final si están presentes
+    if host.startswith("http://"):
+        host = host[7:]
+    elif host.startswith("https://"):
+        host = host[8:]
+    if host.endswith("/"):
+        host = host[:-1]
+    
+    try:
+        # Resolver el nombre de host a una dirección IP
+        host_ip = socket.gethostbyname(host)
+    except socket.error as err:
+        print(f"Error al resolver el host: {err}")
+        return
+    
+    nm = nmap.PortScanner()
+    print(f"Iniciando escaneo de {host} ({host_ip}) desde el puerto {start_port} hasta {end_port}...")
+    
+    try:
+        nm.scan(hosts=host_ip, ports=f'{start_port}-{end_port}', arguments='--host-timeout 60s')  # Establecer un timeout de 60 segundos
+    except nmap.PortScannerTimeout:
+        print("El escaneo se ha agotado el tiempo.")
+        return
+    except nmap.PortScannerError as e:
+        print(f"Error en el escaneo: {e}")
+        return
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+        return
+    
+    open_ports = []
+    try:
+        for proto in nm[host_ip].all_protocols():
+            lport = nm[host_ip][proto].keys()
+            for port in lport:
+                if nm[host_ip][proto][port]['state'] == 'open':
+                    open_ports.append(port)
+    except KeyError:
+        print(f"No se pudo escanear el host {host}. Verifique la dirección y los puertos.")
+        return
+    
+    if open_ports:
+        print(f"Puertos abiertos: {open_ports}")
+    else:
+        print("No se encontraron puertos abiertos.")
+
